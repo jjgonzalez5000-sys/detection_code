@@ -1,0 +1,3 @@
+scapy>=2.6
+pyyaml>=6.0
+yara-x>=0.10

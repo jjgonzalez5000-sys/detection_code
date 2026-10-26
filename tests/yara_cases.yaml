@@ -1,0 +1,38 @@
+# Test cases for YARA rules. Samples are synthetic and written to a temp dir at test time.
+# expect: rules that must match. forbid: rules that must not match.
+
+- name: PHP eval of base64 payload
+  content: |
+    <?php
+    $p = $_POST['d'];
+    eval(base64_decode($p));
+    ?>
+  expect: [DAC_PHP_Webshell_Command_Exec]
+
+- name: PHP system() on request parameter
+  content: |
+    <?php echo "<pre>"; system($_GET['c']); echo "</pre>"; ?>
+  expect: [DAC_PHP_Webshell_Command_Exec]
+
+- name: Benign PHP config decoding
+  content: |
+    <?php
+    $config = json_decode(base64_decode(getenv('APP_CONFIG')), true);
+    echo htmlspecialchars($_GET['name'] ?? '');
+    ?>
+  forbid: [DAC_PHP_Webshell_Command_Exec]
+
+- name: PowerShell -enc launcher
+  content: |
+    cmd.exe /c powershell.exe -nop -w hidden -enc SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIABOAGUAdAAuAFcAZQBiAEMAbABpAGUAbgB0ACkA
+  expect: [DAC_PowerShell_EncodedCommand]
+
+- name: PowerShell -EncodedCommand launcher
+  content: |
+    powershell -NoProfile -EncodedCommand VwByAGkAdABlAC0ASABvAHMAdAAgACIAaABlAGwAbABvACAAdwBvAHIAbABkACIA
+  expect: [DAC_PowerShell_EncodedCommand]
+
+- name: Benign PowerShell -ExecutionPolicy with script file
+  content: |
+    powershell.exe -ExecutionPolicy Bypass -File C:\scripts\backup.ps1
+  forbid: [DAC_PowerShell_EncodedCommand]

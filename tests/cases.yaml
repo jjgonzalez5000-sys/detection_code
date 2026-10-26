@@ -1,0 +1,35 @@
+# Test cases for Suricata rules.
+# expect: SIDs that must fire on the capture. Every rule needs at least one positive case.
+# forbid: SIDs that must NOT fire (benign look-alikes guard against false positives).
+
+- name: IMDS IAM credential request
+  pcap: imds_credentials
+  expect: [9000001]
+
+- name: IMDS benign metadata request
+  pcap: imds_instance_id
+  forbid: [9000001]
+
+- name: DNS tunneling via long TXT query
+  pcap: dns_tunnel_long_query
+  expect: [9000002]
+
+- name: Normal DNS query
+  pcap: dns_normal_query
+  forbid: [9000002]
+
+- name: Stratum mining subscribe
+  pcap: stratum_subscribe
+  expect: [9000003]
+
+- name: Benign JSON-RPC call
+  pcap: jsonrpc_benign
+  forbid: [9000003]
+
+- name: Webshell command execution
+  pcap: webshell_cmd
+  expect: [9000004]
+
+- name: Benign PHP search request
+  pcap: php_search_benign
+  forbid: [9000004]
